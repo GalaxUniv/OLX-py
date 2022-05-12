@@ -1,5 +1,3 @@
-from enum import Flag
-from pickle import TRUE
 from bs4 import BeautifulSoup
 import requests
 from db import check_if_exists, add_to_database, add_specs_to_database
@@ -9,9 +7,21 @@ import re
 class Scrapper:
     def __init__(self,url):
         self.url= url
-        self.data = {
+        self.dataf = {
+        "title":" ",
+        "price":" ",
+        "negotiable":" ",
+        "date":" ",
+        "description":" "
         }
-    
+        self.selector = {
+        "title":["css-r9zjja-Text eu5v0x0"],
+        "price":["css-okktvh-Text eu5v0x0"],
+        "negotiable":["css-1897d50-Text eu5v0x0"],
+        "date":["css-19yf5ek"],
+        "description":["css-g5mtbi-Text"]
+        }
+
     def req_url(self,url=None):
         if url is None:
             url = self.url
@@ -28,33 +38,18 @@ class Scrapper:
         page = requests.get(url)
         return BeautifulSoup(page.text, 'html.parser')
 
-    selector = {
-        "title":["css-r9zjja-Text eu5v0x0"],
-        "price":["css-okktvh-Text eu5v0x0"],
-        "negotiable":["css-1897d50-Text eu5v0x0"],
-        "date":["css-19yf5ek"],
-        "description":["css-g5mtbi-Text"]
-    }
 
-    dataf = {
-        "title":" ",
-        "price":" ",
-        "negotiable":" ",
-        "date":" ",
-        "description":" "
-    }
     
     def get_specs_from_data(self):
         text = self.dataf["description"]
         GHZ = re.findall("([\.\d]+) *[gG][hH][zZ]|([\,\d]+) *[gG][hH][zZ]", text)
         SSD =  re.findall("\d+ *[gG][bB] *SSD|SSD *\d+ *[gG][bB]",text)
         GB = re.findall("\d+ *[gG][bB]",text)
-        Matrix =''.joint(re.findall("[0-9]{3,4} *x *[0-9]{3,4}",text))
+        Matrix = re.findall("[0-9]{3,4} *x *[0-9]{3,4}",text)
         RAM = re.findall("\s[0-9]{1,2} *[Gg][bB]",text)
         HD = re.findall("[0-9]{3,4} *[Gg][bB]",text)
 
-
-        #GHZ
+        
         try:
             for i in GHZ[0]:
                 if len(i) > 0:
@@ -70,16 +65,19 @@ class Scrapper:
         try:
             for i in GB:
                 if i == re.findall("\d+ *[gG][bB]",RAM[0])[0]:
-                    RAM=''.join([i])
+                    RAM=[i]
                 elif i == re.findall("\d+ *[gG][bB]",HD[0])[0]:
-                    if len(SSD) > 0 and SSD[0] != i:
-                        HD=''.join([i])
+                    HD=[i]
                 else:
                     pass
         except IndexError:
                 RAM = ''.join([])
                 HD = ''.join([])
         
+        RAM = ''.join(RAM)
+        HD = ''.join(HD)
+
+
         specs = {
             "GHZ":GHZ,
             "SSD":SSD,
@@ -87,15 +85,15 @@ class Scrapper:
             "HD":HD,
             "Matrix":Matrix
         }
-        self.dataf["specs"] = specs
-        return 0
+        return specs
 
     def get_data(self):
         self.doc = self.req_url()
         test = self.doc.find_all(["a"], class_="css-1bbgabe")
         for adver_number in range(len(test)):
-            href = test[adver_number]['href'] # we check in database if the link is already in the database
-            flag = check_if_exists([href])
+            href = test[adver_number]['href']
+            
+            flag = check_if_exists([href]) # we check in database if the link is already in the database
             if flag:
                 if len(test[adver_number].find_all(class_="css-1katuj6")) > 0:
                     continue
@@ -109,17 +107,15 @@ class Scrapper:
                     except :
                         item = " "
                     self.dataf[key]=item
-                self.get_specs_from_data()
-                add_to_database(href,self.dataf['title'],int(re.findall("\d+",self.dataf['price'])[0]))
-                add_specs_to_database([href],self.dataf['specs']["GHZ"],self.dataf['specs']["SSD"],self.dataf['specs']["RAM"],self.dataf['specs']["HD"],self.dataf['specs']["Matrix"],)
-                # flag = 0
 
+                add_to_database(href,self.dataf['title'],float(''.join(re.findall("\d+\,[0-9]{1,2}|\d+",self.dataf['price'])).replace(',','.')))
+                specs = self.get_specs_from_data()
+                print(specs)
+                add_specs_to_database([href],specs["GHZ"],specs["SSD"],specs["RAM"],specs["HD"],specs["Matrix"])
 
-
-        return test
+        return 0
 
 
 x1 = Scrapper("https://www.olx.pl/d/elektronika/komputery/malopolskie/q-Laptop-ThinkPad/?search[photos]=1&page=1")
 
 x1.get_data()
-z = input()
