@@ -46,7 +46,7 @@ class Scrapper:
     def get_specs_from_data(self):
         text = self.dataf["description"]
         ghz = re.findall("([\.\d]+) *[gG][hH][zZ]|([\,\d]+) *[gG][hH][zZ]", text)
-        ssd =  re.findall("\d+ *[gG][bB] *ssd|ssd *\d+ *[gG][bB]",text)
+        ssd =  re.findall("\d+ *[gG][bB] *[sS][sS][dD]|[sS][sS][dD] *\d+ *[gG][bB]",text)
         gb = re.findall("\d+ *[gG][bB]",text)
         matrix = re.findall("[0-9]{3,4} *x *[0-9]{3,4}",text)
 
