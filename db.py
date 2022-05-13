@@ -12,7 +12,7 @@ mycursor = db.cursor()
 #mycursor.execute("DROP TABLE Specs")
 #mycursor.execute("DROP TABLE Laptops")
 #mycursor.execute("CREATE TABLE laptops(laptop_id int AUTO_INCREMENT PRIMARY KEY, href VARCHAR(255),title VARCHAR(255), price DECIMAL(10,2))")
-#mycursor.execute("CREATE TABLE specs(laptop_id int,ghz VARCHAR(10),sdd VARCHAR(10),ram VARCHAR(10),hd VARCHAR(10),matrix VARCHAR(15),PRIMARY KEY(laptop_id),FOREIGN KEY(laptop_id) REFERENCES Laptops(laptop_id) ON DELETE CASCADE)")
+#mycursor.execute("CREATE TABLE specs(laptop_id int,ghz VARCHAR(10),ssd VARCHAR(10),ram VARCHAR(10),hd VARCHAR(10),matrix VARCHAR(15),PRIMARY KEY(laptop_id),FOREIGN KEY(laptop_id) REFERENCES Laptops(laptop_id) ON DELETE CASCADE)")
 
 
 
@@ -26,11 +26,11 @@ def check_if_exists(href):
         return True
 
 
-#mycursor.execute("SELECT * FROM laptops")
+mycursor.execute("SELECT * FROM laptops")
 #mycursor.execute("SELECT * FROM specs")
-#result = mycursor.fetchall()
-#for x in result:
-#    print(x)
+result = mycursor.fetchall()
+for x in result:
+    print(x)
 
 def export_to_xlsx():
     mycursor.execute("SELECT * FROM laptops")
@@ -42,10 +42,10 @@ def export_to_xlsx():
     mycursor.execute("SELECT * FROM specs")
     result = mycursor.fetchall()
     dxf = pd.DataFrame(result)
-    dxf.columns = ["laptop_id","ghz","sdd","ram","hd","matrix"]
+    dxf.columns = ["laptop_id","ghz","ssd","ram","hd","matrix"]
     
     df= df.merge(dxf)
-    df.to_excel("data.xlsx",index=False)
+    df.to_excel("data_v3.xlsx",index=False)
     #dxf.to_excel("specs.xlsx",index=False)
     return 0
 
@@ -75,11 +75,11 @@ def add_specs_to_database(href,GHZ,SSD,RAM,HD,Matrix):
     mycursor.execute("SELECT laptop_id FROM laptops WHERE href = %s", (href))
     result = mycursor.fetchall()
     laptop_id = result[0][0]
-    mycursor.execute("INSERT INTO specs(laptop_id,ghz,sdd,matrix,ram,hd) VALUES(%s,%s,%s,%s,%s,%s)", (laptop_id,GHZ,SSD,Matrix,RAM,HD))
+    mycursor.execute("INSERT INTO specs(laptop_id,ghz,ssd,matrix,ram,hd) VALUES(%s,%s,%s,%s,%s,%s)", (laptop_id,GHZ,SSD,Matrix,RAM,HD))
     db.commit()
     print("Added to specs database")
     return 0
 
 
 #clean_empty_values()
-export_to_xlsx()
+#export_to_xlsx()
