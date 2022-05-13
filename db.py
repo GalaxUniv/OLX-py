@@ -42,7 +42,7 @@ def export_to_xlsx():
     mycursor.execute("SELECT * FROM specs")
     result = mycursor.fetchall()
     dxf = pd.DataFrame(result)
-    dxf.columns = ["laptop_id","ghz","sdd","matrix","ram","hd"]
+    dxf.columns = ["laptop_id","ghz","sdd","ram","hd","matrix"]
     
     df= df.merge(dxf)
     df.to_excel("data.xlsx",index=False)
@@ -82,4 +82,4 @@ def add_specs_to_database(href,GHZ,SSD,RAM,HD,Matrix):
 
 
 #clean_empty_values()
-#export_to_xlsx()
+export_to_xlsx()
